@@ -41,7 +41,25 @@ struct ContentView: View {
                     Text("Moment")
                 }
         }
-        .accentColor(.black) // Customize the accent color for the selected tab
+        .accentColor(.white) // Customize the accent color for the selected tab
+        .onAppear {
+            // Set the background color of the Tab Bar
+            let tabBarAppearance = UITabBarAppearance()
+            tabBarAppearance.configureWithOpaqueBackground()
+            tabBarAppearance.backgroundColor = UIColor.systemBlue // Choose your color here
+            // Set the colors for selected and unselected items
+            tabBarAppearance.stackedLayoutAppearance.normal.iconColor = UIColor.black // Unselected icon color
+            tabBarAppearance.stackedLayoutAppearance.selected.iconColor = UIColor.white // Selected icon color
+            // Set the colors for unselected and selected text
+            tabBarAppearance.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.black] // Unselected text color
+            tabBarAppearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: UIColor.white] // Selected text color
+            
+            UITabBar.appearance().standardAppearance = tabBarAppearance
+            if #available(iOS 15.0, *) {
+                UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
+            }
+        }
+        
     }
 }
 
@@ -64,9 +82,18 @@ struct BDayView: View {
                 List {
                     ForEach(reminders) { reminder in
                         HStack {
+                            Image(systemName: "pencil.circle.fill")
+                            .foregroundColor(.blue)
+                            .font(.system(size: 30))
+                            .padding()
                             Text(reminder.name ?? "Unnamed")
+                                .font(.headline)
+                                .foregroundColor(.primary)
                             Spacer()
+                            
                             Text(dateFormatter.string(from: reminder.date ?? Date()))
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
                         }
                         .onTapGesture {
                             // Set the selected reminder for editing
@@ -78,55 +105,100 @@ struct BDayView: View {
                     }
                     .onDelete(perform: deleteReminder)
                 }
-                .navigationTitle("Birthdays")
+                
                 .toolbar {
+                    Group {
+                        ToolbarItem(placement: .principal) { // Centers the title
+                            Text("Birthdays")
+                                .font(.largeTitle) // Customize the font size here
+                                .bold() // Optionally make it bold
+                                
+                        }
+                    }
+                    
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button(action: {
                             showingAddReminder = true
                         }) {
                             Image(systemName: "plus")
+                                .foregroundColor(.blue)
+                                .padding(10)
+                                .background(Color(UIColor.systemGray6))
+                                .cornerRadius(8)
+                                .shadow(radius: 6)
                         }
                     }
                 }
+                
                 .sheet(isPresented: $showingAddReminder) {
                     VStack {
                         Text("Add Birthday Reminder")
-                            .font(.headline)
+                            .font(.title2)
+                            .fontWeight(.bold)
                         TextField("Name", text: $newName)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
                             .padding()
                         
                         DatePicker("Date", selection: $newDate, displayedComponents: .date)
+                            .datePickerStyle(GraphicalDatePickerStyle())
                             .padding()
 
-                        Button("Add Reminder") {
-                            addReminder()
-                            showingAddReminder = false
+                        Group {
+                            Button(action: {
+                                addReminder()
+                                showingAddReminder = false
+                            }) {
+                                Text("Add Reminder")
+                                    .fontWeight(.bold)
+                                    .padding()
+                                    .frame(maxWidth: .infinity)
+                                    .background(Color.blue)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(10)
+                            }
+                            .padding()
                         }
-                        .padding()
                     }
                     .padding()
+                    .background(Color(UIColor.systemGray6))
+                    .cornerRadius(20)
+                    .shadow(radius: 10)
                 }
                 .sheet(isPresented: $showingEditReminder) {
                     VStack {
                         Text("Edit Birthday Reminder")
-                            .font(.headline)
+                            .font(.title2)
+                            .fontWeight(.bold)
                         TextField("Name", text: $newName)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
                             .padding()
                         
                         DatePicker("Date", selection: $newDate, displayedComponents: .date)
+                            .datePickerStyle(GraphicalDatePickerStyle())
                             .padding()
 
-                        Button("Save Changes") {
-                            if let reminder = selectedReminder {
-                                editReminder(reminder: reminder, newName: newName, newDate: newDate)
-                                showingEditReminder = false
+                        Group {
+                            Button(action: {
+                                if let reminder = selectedReminder {
+                                    editReminder(reminder: reminder, newName: newName, newDate: newDate)
+                                    showingEditReminder = false
+                                }
+                            }) {
+                                Text("Save Changes")
+                                    .fontWeight(.bold)
+                                    .padding()
+                                    .frame(maxWidth: .infinity)
+                                    .background(Color.green)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(10)
                             }
+                            .padding()
                         }
-                        .padding()
                     }
                     .padding()
+                    .background(Color(UIColor.systemGray6))
+                    .cornerRadius(20)
+                    .shadow(radius: 10)
                 }
             }
         }
